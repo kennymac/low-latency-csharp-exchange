@@ -23,6 +23,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentat
 		Documentation\00 How To Feed Signals Into the App or Probe a running console app.md = Documentation\00 How To Feed Signals Into the App or Probe a running console app.md
 		Documentation\01 Memory Coherence Volatile and Lock-Free Ring Buffer Hardware Architecture.md = Documentation\01 Memory Coherence Volatile and Lock-Free Ring Buffer Hardware Architecture.md
 		Documentation\02 How To Create Low Latency Unit Tests Without Heavyweight Test Harnesses.md = Documentation\02 How To Create Low Latency Unit Tests Without Heavyweight Test Harnesses.md
+		Documentation\03 LMAX Disruptor Architecture and Mechanical Sympathy in CSharp.md = Documentation\03 LMAX Disruptor Architecture and Mechanical Sympathy in CSharp.md
+		Documentation\04 Power of Two Bitwise Masking vs Modulo Division.md = Documentation\04 Power of Two Bitwise Masking vs Modulo Division.md
+		Documentation\05 Cache Line Padding and StructLayout Memory Alignment in CSharp.md = Documentation\05 Cache Line Padding and StructLayout Memory Alignment in CSharp.md
 	EndProjectSection
 EndProject
 Global
