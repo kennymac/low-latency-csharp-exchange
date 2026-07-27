@@ -10,7 +10,16 @@ public class ProcessProfiler
 {
     public long MeasureAllocationsInChildProcess(string exePath)
     {
-        var psi = new ProcessStartInfo(exePath) { RedirectStandardOutput = true };
+        ProcessStartInfo psi;
+        if (exePath.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+        {
+            psi = new ProcessStartInfo("dotnet", exePath) { RedirectStandardOutput = true };
+        }
+        else
+        {
+            psi = new ProcessStartInfo(exePath) { RedirectStandardOutput = true };
+        }
+
         var process = Process.Start(psi) ?? throw new Exception("Failed to start process");
 
         // Create an EventPipe session targeting the spawned process PID

@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestHarness.UnitTests", "TestHarness\TestHarness.UnitTests\TestHarness.UnitTests.csproj", "{3C0B7D7E-E7F9-4084-927C-4E4DE23A6FBE}"
 EndProject
@@ -13,6 +13,17 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LowLatency.ScratchPad.Engine", "LowLatency.ScratchPad.Engine\LowLatency.ScratchPad.Engine.csproj", "{893D248E-2621-459B-AC49-C8A2DBD438D3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestHarness", "TestHarness", "{43828876-253D-431E-B53E-1F9A65902207}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LowLatency.ScratchPad.MatchingEngine.UnitTests", "LowLatency.ScratchPad.MatchingEngine.UnitTests\LowLatency.ScratchPad.MatchingEngine.UnitTests.csproj", "{E2736A02-BB05-4A9D-A418-539862CEA1A9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "00 misc", "00 misc", "{E70B9003-C6E8-4EBB-9670-AEBA773E4912}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentation", "{8CA68B1D-66B9-4026-97A2-50D5D62F3CED}"
+	ProjectSection(SolutionItems) = preProject
+		Documentation\00 How To Feed Signals Into the App or Probe a running console app.md = Documentation\00 How To Feed Signals Into the App or Probe a running console app.md
+		Documentation\01 Memory Coherence Volatile and Lock-Free Ring Buffer Hardware Architecture.md = Documentation\01 Memory Coherence Volatile and Lock-Free Ring Buffer Hardware Architecture.md
+		Documentation\02 How To Create Low Latency Unit Tests Without Heavyweight Test Harnesses.md = Documentation\02 How To Create Low Latency Unit Tests Without Heavyweight Test Harnesses.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,11 +47,16 @@ Global
 		{893D248E-2621-459B-AC49-C8A2DBD438D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{893D248E-2621-459B-AC49-C8A2DBD438D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{893D248E-2621-459B-AC49-C8A2DBD438D3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E2736A02-BB05-4A9D-A418-539862CEA1A9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E2736A02-BB05-4A9D-A418-539862CEA1A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E2736A02-BB05-4A9D-A418-539862CEA1A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E2736A02-BB05-4A9D-A418-539862CEA1A9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{01BBC1D5-3729-48BA-869E-6E2BF140F387} = {866FCDE7-6B4E-48EC-AAA4-ABF24B25B4B8}
 		{C87AF910-05CA-4875-83FA-7CB934849879} = {866FCDE7-6B4E-48EC-AAA4-ABF24B25B4B8}
 		{893D248E-2621-459B-AC49-C8A2DBD438D3} = {6369C561-0874-42CF-B133-BC053DAF1749}
 		{3C0B7D7E-E7F9-4084-927C-4E4DE23A6FBE} = {43828876-253D-431E-B53E-1F9A65902207}
+		{E2736A02-BB05-4A9D-A418-539862CEA1A9} = {6369C561-0874-42CF-B133-BC053DAF1749}
 	EndGlobalSection
 EndGlobal

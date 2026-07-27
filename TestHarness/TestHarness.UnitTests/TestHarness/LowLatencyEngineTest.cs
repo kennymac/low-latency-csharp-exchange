@@ -1,16 +1,16 @@
-using LowLatency.ScratchPad;
 using LowLatency.ScratchPad.Engine;
+using LowLatency.ScratchPad.Engine.Model;
 
 namespace TestHarness.UnitTests.TestHarness;
 
-public class LowLatencyEngineTests
+public class LowLatencyEngineTest
 {
     [Fact]
     public void OrderExecution_MustBeZeroAllocation()
     {
         // 1. Warm-up phase: JIT-compile all paths and initialize static buffers
         var engine = new MatchingEngine();
-        engine.ExecuteOrder(101, 150.50m, 100);
+        engine.ProcessOrder(1, 101, 1, Side.Buy, 150, 100);
 
         // 2. Force GC to establish a clean baseline
         GC.Collect();
@@ -18,15 +18,15 @@ public class LowLatencyEngineTests
         GC.Collect();
 
         // 3. Capture baseline
-        long bytesBefore = GC.GetAllocatedBytesForCurrentThread();
+        var bytesBefore = GC.GetAllocatedBytesForCurrentThread();
 
         // 4. Hot-Path Execution (The exact code you want to test)
-        engine.ExecuteOrder(102, 150.55m, 200);
+        engine.ProcessOrder(1, 102, 1, Side.Buy, 150, 200);
 
-        // 5. Assert zero bytes allocated on managed heap
-        long bytesAfter = GC.GetAllocatedBytesForCurrentThread();
-        long allocated = bytesAfter - bytesBefore;
+        // 5. Assert zero bytes allocated on the managed heap
+        var bytesAfter = GC.GetAllocatedBytesForCurrentThread();
+        var allocated = bytesAfter - bytesBefore;
 
-        Assert.Equal(0, allocated);
+        allocated.Should().Be(0, "no bytes should be allocated to the managed heap");
     }
 }
