@@ -26,6 +26,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentat
 		Documentation\03 LMAX Disruptor Architecture and Mechanical Sympathy in CSharp.md = Documentation\03 LMAX Disruptor Architecture and Mechanical Sympathy in CSharp.md
 		Documentation\04 Power of Two Bitwise Masking vs Modulo Division.md = Documentation\04 Power of Two Bitwise Masking vs Modulo Division.md
 		Documentation\05 Cache Line Padding and StructLayout Memory Alignment in CSharp.md = Documentation\05 Cache Line Padding and StructLayout Memory Alignment in CSharp.md
+		Documentation\06 Event Emission and Outbound Ring Buffer Architecture in Low Latency Engines.md = Documentation\06 Event Emission and Outbound Ring Buffer Architecture in Low Latency Engines.md
 	EndProjectSection
 EndProject
 Global
