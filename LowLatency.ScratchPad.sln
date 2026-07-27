@@ -27,6 +27,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentat
 		Documentation\04 Power of Two Bitwise Masking vs Modulo Division.md = Documentation\04 Power of Two Bitwise Masking vs Modulo Division.md
 		Documentation\05 Cache Line Padding and StructLayout Memory Alignment in CSharp.md = Documentation\05 Cache Line Padding and StructLayout Memory Alignment in CSharp.md
 		Documentation\06 Event Emission and Outbound Ring Buffer Architecture in Low Latency Engines.md = Documentation\06 Event Emission and Outbound Ring Buffer Architecture in Low Latency Engines.md
+		Documentation\07 Binary Network Protocols and SBE vs FIX in High Frequency Trading.md = Documentation\07 Binary Network Protocols and SBE vs FIX in High Frequency Trading.md
 	EndProjectSection
 EndProject
 Global
