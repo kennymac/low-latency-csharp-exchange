@@ -32,6 +32,7 @@
 
 ## 3. Testing & Benchmarking Workflow
 * **TDD First:** Write unit tests for correctness before optimizing for speed.
+* **Interactive Pair Programming Review:** When reviewing test suites or multi-stage implementations with the user, present tests/code step-by-step in small batches (2–3 tests at a time) and pause for review before proceeding.
 * **BenchmarkDotNet:** Every data structure / component must have a corresponding BenchmarkDotNet harness annotated with `[MemoryDiagnoser]` to enforce **0 Bytes allocated per operation**.
 
 ---
@@ -45,6 +46,7 @@
 * **Block Comments:** Structure test bodies with `// Arrange`, `// Act`, `// Assert` block headers.
 * **Allocation Assertion Grammar:** In zero-allocation tests, use exact comment grammar:
   `// Assert zero bytes allocated on the managed heap`
+* **DAMP Allocation Pattern:** Keep zero-allocation test setup self-contained and explicit (DAMP - Descriptive And Meaningful Phrases) rather than extracting helper methods. Seeing the explicit GC collection, warmup, `bytesBefore`, and `bytesAfter` sequence makes the measurement transparent and prevents hidden delegate allocation artifacts.
 * **Clean Null Assertions:** Avoid redundant `!` null-suppression operators after `.Should().NotBeNull()`. `book.AsksByPrice.Price` is preferred over `book.AsksByPrice!.Price`.
 
 ### Code Formatting & Type Usage
