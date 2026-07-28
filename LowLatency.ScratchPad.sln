@@ -19,7 +19,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentat
 		Documentation\07 Binary Network Protocols and SBE vs FIX in High Frequency Trading.md = Documentation\07 Binary Network Protocols and SBE vs FIX in High Frequency Trading.md
 		Documentation\08 BenchmarkDotNet Profiling Harness and Allocation Verification in CSharp.md = Documentation\08 BenchmarkDotNet Profiling Harness and Allocation Verification in CSharp.md
 		Documentation\09 Native AOT Compilation and Bare Metal CSharp Performance.md = Documentation\09 Native AOT Compilation and Bare Metal CSharp Performance.md
-		Documentation\10 Hardware Microarchitecture Benchmark Comparison Intel Xeon vs Apple M3 Pro.md = Documentation\10 Hardware Microarchitecture Benchmark Comparison Intel Xeon vs Apple M3 Pro.md
+		Documentation\10 Hardware Microarchitecture Benchmark Comparison Intel Xeon vs Apple M3 Pro vs Apple M1.md = Documentation\10 Hardware Microarchitecture Benchmark Comparison Intel Xeon vs Apple M3 Pro vs Apple M1.md
 		README.md = README.md
 	EndProjectSection
 EndProject
