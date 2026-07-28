@@ -32,6 +32,11 @@
 * **Root Cause:** Native AOT IL trimming strips reflection metadata required by `CommandLineParser` inside the BDN host orchestrator process.
 * **Rule:** Keep `<PublishAot>true</PublishAot>` enabled on core engine/library projects (`LowLatency.ScratchPad.Engine.csproj`). Do **NOT** place `<PublishAot>true</PublishAot>` on BDN runner `.csproj` files. To benchmark Native AOT execution with BDN, keep the runner `.csproj` JIT-enabled and annotate benchmark classes with `[SimpleJob(RuntimeMoniker.NativeAot100)]`.
 
+### 5. Multi-Hardware Benchmark Result Preservation
+* **Rule:** Do NOT overwrite existing benchmark result artifacts in `BenchmarkDotNet.Artifacts/` or raw benchmark summaries when executing benchmarks unless explicitly instructed by the user to update them.
+* **Storage Pattern:** Isolate results into target hardware directories (`BenchmarkDotNet.Artifacts/M1/`, `BenchmarkDotNet.Artifacts/M3Pro/`, `BenchmarkDotNet.Artifacts/Xeon/`) and create dedicated `benchmark-raw-<Architecture>.md` summaries.
+
+
 ---
 
 ## Ongoing Task Backlog & Technical Debt

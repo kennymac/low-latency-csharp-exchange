@@ -35,6 +35,8 @@
 * **TDD First:** Write unit tests for correctness before optimizing for speed.
 * **Interactive Pair Programming Review:** When reviewing test suites or multi-stage implementations with the user, present tests/code step-by-step in small batches (2–3 tests at a time) and pause for review before proceeding.
 * **BenchmarkDotNet:** Every data structure / component must have a corresponding BenchmarkDotNet harness annotated with `[MemoryDiagnoser]` to enforce **0 Bytes allocated per operation**.
+* **Benchmark Artifact Preservation:** When running benchmark suites, do NOT overwrite existing benchmark result files in `BenchmarkDotNet.Artifacts/` or raw benchmark summaries unless explicitly requested to update them. Always isolate and store new benchmark results under hardware-specific directories (e.g. `BenchmarkDotNet.Artifacts/M1/`, `BenchmarkDotNet.Artifacts/M3Pro/`, `BenchmarkDotNet.Artifacts/Xeon/`) and create dedicated `benchmark-raw-<Architecture>.md` files to maintain cross-hardware comparative history.
+
 
 ---
 
