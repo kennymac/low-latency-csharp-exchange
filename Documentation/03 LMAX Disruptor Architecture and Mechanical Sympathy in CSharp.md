@@ -23,8 +23,7 @@ In high-frequency financial exchanges, traditional queues (such as `BlockingColl
 
 ### B. Bitwise Masking via Power-of-Two Capacity
 * Queue capacity is constrained to a power of 2 ($N = 2^k$).
-* Sequence wrapping replaces modulo division with a single bitwise AND instruction:
-  $$\text{slotIndex} = \text{sequence} \,\, \& \,\, (\text{capacity} - 1)$$
+* Sequence wrapping replaces modulo division with a single bitwise AND instruction: `slotIndex = sequence & (capacity - 1)`
 
 ### C. Explicit Cache Line Padding
 * Sequences (`head` and `tail` cursors) are padded with 128 bytes of empty space to ensure they reside on completely separate physical cache lines across Intel Xeon (64B) and Apple Silicon M1/M4 (128B) cores.

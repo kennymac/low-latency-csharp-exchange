@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\LowLatency.ScratchPad.Engine\LowLatency.ScratchPad.Engine.csproj" />
+    <ProjectReference Include="..\LowLatency.ScratchPad.IdiomaticEngine\LowLatency.ScratchPad.IdiomaticEngine.csproj" />
   </ItemGroup>
 
 </Project>

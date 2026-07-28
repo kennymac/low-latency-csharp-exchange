@@ -1,20 +1,30 @@
-# Low-Latency Financial Exchange & Engine Scratchpad (.NET 10 / C# 12)
+# Low-Latency Financial Exchange Engine & Microarchitecture Benchmark (.NET 10 / C# 12)
 
 This is an *agent-assisted pairing experiment* - can I use [Google Antigravity 2.0](https://antigravity.google/) to migrate an [existing C++ low-latency codebase](https://github.com/PacktPublishing/Building-Low-Latency-Applications-with-CPP) to modern C#... and hit decent benchmarks with zero allocations? *In just a couple of hours?*
 
 The benchmarked answer, below, is yes!
 
 - Zero-allocation, ultra-low-latency C# financial exchange engine
-- The pair programming work took around 3 hours, proceeding step by step in a TDD test-and-review cycle, digging into concepts as required, as well as producing covering documentation for each phase - not letting the agent spool out the entire solution in just a few minutes
-- Recommended reading for .net and CPU and memory architecture concepts is [Pro .NET Memory Management: For Better Code, Performance, and Scalability](https://www.amazon.co.uk/Pro-NET-Memory-Management-Performance/dp/B0D3PNGKZR)
-
-The baseline C++ codebase used for the experiment was the exchange architecture outlined in Sourav Ghosh's book [Building Low Latency Applications with C++: Develop a complete low latency trading ecosystem from scratch using modern C++](https://www.amazon.co.uk/Building-Low-Latency-Applications-ecosystem/dp/1837639353).
+- The pair programming work took ~4.5 hours, proceeding step by step in a TDD test-and-review cycle, digging into concepts as required, as well as producing covering documentation for each phase - not letting the agent spool out the entire solution in just a few minutes
+- All .NET Core 10 running on macOS using [Jetbrains' Rider](https://www.jetbrains.com/rider/) IDE
+- The baseline C++ codebase used for the experiment was the exchange architecture outlined in Sourav Ghosh's book ***Building Low Latency Applications with C++: Develop a complete low latency trading ecosystem from scratch using modern C++*** (see [Recommended Reading](#recommended-reading), below).
 
 ## Approach
 
-Given that dotnet core CLR lives within a garbage collected runtime, I followed the well-known 2011 [LMAX Disruptor](https://lmax-exchange.github.io/disruptor/) approach, which achieved its speeds by **avoiding GC entirely on the hot path**.  In modern C#, by using `Unsafe`, pre-allocated byte buffers, and zero-allocation object pools, we can achieve similarly impressive results.  
+Given that dotnet core lives within a garbage collected runtime, I followed the well-known 2011 [LMAX Disruptor](https://lmax-exchange.github.io/disruptor/) approach, which achieved its speeds by **avoiding GC entirely on the hot path**.  In modern C#, by using `Unsafe`, pre-allocated byte buffers, and zero-allocation object pools, we can achieve similarly impressive results.  
 
 Thus, we repeat Java’s early success around **zero-allocation idioms**, to  highlight why C# can now do exactly the same thing natively with `Span<T>` and `ref struct`.
+
+---
+
+### Agent-Pairing Workflow & Steering Rules
+
+The engine was constructed over a ~4.5-hour pairing session with an AI agent (*Google Antigravity 2.0*), taking the architecture piece by piece in an interactive TDD rhythm:
+1. **Interactive TDD Review Cycle:** The agent was instructed to write unit tests first, pause, and wait for code review before implementing the matching logic or lock-free queue.
+2. **Microarchitecture Exploration:** This step-by-step pace created natural checkpoints to ask questions about CPU cycle counts, cache line sizes, and generate [in-depth documentation](#documentation) for key concepts (cache alignment, bitwise masking, Native AOT).
+3. **Explicit Agent Rules:** The agent was governed by strict steering rules defined in [AGENTS.md](AGENTS.md) (enforcing 0-byte heap allocations, DAMP testing, and artifact preservation).
+
+💬 For a fuller account of the experiment, join the conversation in [GitHub Discussions](https://github.com/kennymac/low-latency-csharp-exchange/discussions).
 
 ---
 
@@ -69,6 +79,21 @@ Thus, we repeat Java’s early success around **zero-allocation idioms**, to  hi
 | **Apple M3 Pro** | Arm64 (12 Cores) | **22.62 ns** | **44,208,664 pairs/sec** | **88,417,328 orders/sec** | **0 B** |
 | **Apple M1** | Arm64 (8 Cores) | **35.10 ns** | **28,490,028 pairs/sec** | **56,980,056 orders/sec** | **0 B** |
 | **Intel Xeon W-3245** | X64 @ 3.2GHz (16 Cores) | **45.31 ns** | **22,070,670 pairs/sec** | **44,141,340 orders/sec** | **0 B** |
+
+---
+
+### Empirical Comparison: Zero-Allocation C# vs. Idiomatic C# (Apple M3 Pro)
+
+To evaluate the exact performance gain of custom low-latency memory design versus standard C# programming, we implemented an **`IdiomaticEngine`** (`LowLatency.ScratchPad.IdiomaticEngine`) using conventional object-oriented patterns (`class Order`, `new Order()`, `SortedDictionary<long, LinkedList<Order>>`, `ConcurrentQueue<T>`) executing identical matching logic.
+
+#### BenchmarkDotNet Results (Apple M3 Pro Host):
+
+| Matching Engine Architecture | Mean Latency | Median Latency | Throughput (Pairs / sec) | Managed Heap Allocations | GC Gen0 Collections / 1k ops | Latency Ratio |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Zero-Allocation Engine** *(Current)* | **25.16 ns** | **23.44 ns** | **39,745,000 pairs/sec** | **0 B** | **0.0000** | **1.00x (Baseline)** |
+| **Idiomatic C# Engine** *(Standard OOP)* | **53.51 ns** | **53.42 ns** | **18,688,000 pairs/sec** | **328 B / pair** | **0.0392** | **2.22x slower** |
+
+* **Key Takeaway:** The zero-allocation architecture is **2.22x faster** in mean latency and eliminates **328 Bytes of heap allocations per matched pair** (guaranteeing 100% immunity from GC pauses under load).
 
 ---
 
@@ -154,9 +179,7 @@ dotnet run -c Release --project LowLatency.ScratchPad.Benchmarks/LowLatency.Scra
 
 ---
 
-## Documentation Table of Contents
-
-All guides are registered inside `LowLatency.ScratchPad.sln` under the `Documentation` folder:
+## Documentation
 
 * [00 How To Feed Signals Into the App or Probe a running console app.md](Documentation/00%20How%20To%20Feed%20Signals%20Into%20the%20App%20or%20Probe%20a%20running%20console%20app.md)
 * [01 Memory Coherence Volatile and Lock-Free Ring Buffer Hardware Architecture.md](Documentation/01%20Memory%20Coherence%20Volatile%20and%20Lock-Free%20Ring%20Buffer%20Hardware%20Architecture.md)
@@ -169,3 +192,12 @@ All guides are registered inside `LowLatency.ScratchPad.sln` under the `Document
 * [08 BenchmarkDotNet Profiling Harness and Allocation Verification in CSharp.md](Documentation/08%20BenchmarkDotNet%20Profiling%20Harness%20and%20Allocation%20Verification%20in%20CSharp.md)
 * [09 Native AOT Compilation and Bare Metal CSharp Performance.md](Documentation/09%20Native%20AOT%20Compilation%20and%20Bare%20Metal%20CSharp%20Performance.md)
 * [10 Hardware Microarchitecture Benchmark Comparison Intel Xeon vs Apple M3 Pro vs Apple M1.md](Documentation/10%20Hardware%20Microarchitecture%20Benchmark%20Comparison%20Intel%20Xeon%20vs%20Apple%20M3%20Pro%20vs%20Apple%20M1.md)
+
+
+--- 
+
+## Recommended Reading
+
+- For patterns and trading exchange architecture components, see ***Building Low Latency Applications with C++: Develop a complete low latency trading ecosystem from scratch using modern C++*** [Packt](https://www.packtpub.com/en-us/product/building-low-latency-applications-with-c-9781837639359) | [GitHub](https://github.com/PacktPublishing/Building-Low-Latency-Applications-with-CPP) | [Amazon](https://link.amazon/B00v7H7GK)
+
+- For .NET low level optimisation and memory management fundamentals, see ***Pro .NET Memory Management: For Better Code, Performance, and Scalability*** [Apress](https://link.springer.com/book/10.1007/978-1-4842-4027-4) | [GitHub](https://github.com/Apress/pro-.net-memory) | [Amazon](https://amzn.to/4yNR3hT)

@@ -32,9 +32,7 @@ To extract those lower $k$ bits in 1 single CPU instruction without performing a
 1. Constrain capacity to a power of two: $\text{capacity} = 2^k$ (e.g. $1024$).
 2. Calculate mask: $\text{mask} = \text{capacity} - 1$ (e.g. $1024 - 1 = 1023$).
 3. In binary, $1023$ has $1$s in all lower $k$ bits (`00111111111_2`).
-4. Bitwise `AND` (`sequence & mask`) clears all bits above bit $k-1$ and preserves the lower $k$ bits:
-
-$$\text{slotIndex} = \text{sequence} \,\, \& \,\, (\text{capacity} - 1)$$
+4. Bitwise `AND` (`sequence & mask`) clears all bits above bit $k-1$ and preserves the lower $k$ bits: `slotIndex = sequence & (capacity - 1)`
 
 ---
 
