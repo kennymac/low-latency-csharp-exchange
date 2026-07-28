@@ -50,19 +50,39 @@ Intel Xeon W-3245 CPU 3.20GHz, 1 CPU, 32 logical and 16 physical cores
 
 ---
 
-## Native AOT Compilation Commands
+## How to Build & Run Benchmarks
 
-To publish the engine as a standalone, ahead-of-time (AOT) compiled native machine code binary with **zero JIT tiering pauses**:
-
+### 1. Run Unit Tests
 ```bash
-# Publish Native AOT binary (macOS Intel x64 - Current Environment)
-dotnet publish LowLatency.ScratchPad.Engine/LowLatency.ScratchPad.Engine.csproj -c Release -r osx-x64 --self-contained /p:PublishAot=true
+dotnet test
+```
 
-# Publish Native AOT binary (macOS ARM64 / Apple Silicon M1/M4)
-dotnet publish LowLatency.ScratchPad.Engine/LowLatency.ScratchPad.Engine.csproj -c Release -r osx-arm64 --self-contained /p:PublishAot=true
+### 2. Run BenchmarkDotNet Suite (Direct Execution)
+Run all micro-benchmarks in Release mode directly from your terminal:
+```bash
+dotnet run -c Release --project LowLatency.ScratchPad.Benchmarks --filter "*"
+```
+> **Terminal Environment Note:** In standard macOS/Linux user terminals, your shell automatically sets `$HOME`. No custom environment variables are required.
 
-# Publish Native AOT binary (Linux x64 Production Server Target)
-dotnet publish LowLatency.ScratchPad.Engine/LowLatency.ScratchPad.Engine.csproj -c Release -r linux-x64 --self-contained /p:PublishAot=true
+### 3. Publish & Run Standalone Benchmark Host Executable
+Alternatively, publish and execute the self-contained Release binary:
+```bash
+# Publish self-contained release executable (Apple Silicon / macOS ARM64)
+dotnet publish LowLatency.ScratchPad.Benchmarks/LowLatency.ScratchPad.Benchmarks.csproj -c Release -r osx-arm64 --self-contained
+
+# Execute published benchmark host binary
+./LowLatency.ScratchPad.Benchmarks/bin/Release/net10.0/osx-arm64/publish/LowLatency.ScratchPad.Benchmarks --filter "*"
+```
+> **Important Note on Native AOT:** Core engine/library projects (`LowLatency.ScratchPad.Engine.csproj`) **CAN and SHOULD** use `<PublishAot>true</PublishAot>` to guarantee zero-pause, bare-metal native binaries. However, BenchmarkDotNet host runner projects (`LowLatency.ScratchPad.Benchmarks.csproj`) **MUST NOT** enable `<PublishAot>true</PublishAot>` because BenchmarkDotNet's host CLI parser (`CommandLineParser`) relies on reflection metadata that Native AOT IL trimming strips out.
+
+### 4. Build Core Engine with Native AOT
+To publish the core engine as a zero-pause, bare-metal Native AOT binary:
+```bash
+# macOS ARM64 (Apple Silicon M1/M3/M4)
+dotnet publish LowLatency.ScratchPad.Engine/LowLatency.ScratchPad.Engine.csproj -c Release -r osx-arm64
+
+# Linux x64 (Production HFT Server Target)
+dotnet publish LowLatency.ScratchPad.Engine/LowLatency.ScratchPad.Engine.csproj -c Release -r linux-x64
 ```
 
 ---

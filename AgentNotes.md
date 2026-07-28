@@ -27,6 +27,11 @@
 * Need fixed-width zero-allocation structs for `Order`, `Trade`, and `MarketUpdate`.
 * Avoid string handles for Symbols or Client IDs. Use `long` / `ulong` bitpacked IDs or fixed `byte` arrays (`ReadOnlySpan<byte>`).
 
+### 4. Native AOT & BenchmarkDotNet Host Runner Pitfall
+* **Issue:** Setting `<PublishAot>true</PublishAot>` inside `LowLatency.ScratchPad.Benchmarks.csproj` breaks BenchmarkDotNet at runtime with `InvalidOperationException: Type BenchmarkDotNet.ConsoleArguments.CommandLineOptions appears to be immutable, but no constructor found to accept values`.
+* **Root Cause:** Native AOT IL trimming strips reflection metadata required by `CommandLineParser` inside the BDN host orchestrator process.
+* **Rule:** Keep `<PublishAot>true</PublishAot>` enabled on core engine/library projects (`LowLatency.ScratchPad.Engine.csproj`). Do **NOT** place `<PublishAot>true</PublishAot>` on BDN runner `.csproj` files. To benchmark Native AOT execution with BDN, keep the runner `.csproj` JIT-enabled and annotate benchmark classes with `[SimpleJob(RuntimeMoniker.NativeAot100)]`.
+
 ---
 
 ## Ongoing Task Backlog & Technical Debt

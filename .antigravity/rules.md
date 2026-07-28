@@ -25,7 +25,8 @@
 * **macOS Affinity Awareness:** POSIX thread affinity is restricted on macOS. Use spin-wait strategies (`Thread.SpinWait()`, `SpinWait.SpinOnce()`) and explicit core yielding rather than relying on native thread pinning.
 
 ### Native AOT & Compiler Options
-* **Native AOT Ready:** Ensure code builds cleanly under `<PublishAot>true</PublishAot>` with zero reflection or dynamic code generation errors.
+* **Native AOT Ready:** Ensure core engine code builds cleanly under `<PublishAot>true</PublishAot>` with zero reflection or dynamic code generation errors.
+* **BenchmarkDotNet & Native AOT Rule:** Do **NOT** set `<PublishAot>true</PublishAot>` inside BenchmarkDotNet runner `.csproj` files (e.g. `LowLatency.ScratchPad.Benchmarks.csproj`). Publishing the BDN host orchestrator as Native AOT enables IL trimming, which strips reflection metadata required by `CommandLineParser` (`BenchmarkDotNet.ConsoleArguments.CommandLineOptions`) and throws `InvalidOperationException` on CLI argument parsing. To benchmark Native AOT execution, keep the host `.csproj` JIT-enabled and annotate benchmark classes with `[SimpleJob(RuntimeMoniker.NativeAot100)]` or `[SimpleJob(RuntimeMoniker.NativeAot90)]`.
 * **Inlining:** Annotate critical micro-functions with `[MethodImpl(MethodImplOptions.AggressiveInlining)]`.
 
 ---
