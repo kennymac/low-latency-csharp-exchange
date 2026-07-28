@@ -10,6 +10,7 @@
 *.userosscache
 *.sln.docstates
 *.env
+Library/
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
@@ -79,8 +80,8 @@ nunit-*.xml
 [Rr]eleasePS/
 dlldata.c
 
-# Benchmark Results
-BenchmarkDotNet.Artifacts/
+# Benchmark Results (tracked in repo)
+!BenchmarkDotNet.Artifacts/
 
 # .NET Core
 project.lock.json

@@ -4,40 +4,43 @@ A zero-allocation, ultra-low-latency C# financial exchange engine scratchpad mod
 
 ---
 
-## Official BenchmarkDotNet Performance & Throughput (Ops/sec)
+## Official BenchmarkDotNet Performance & Hardware Comparison
 
-```text
-BenchmarkDotNet v0.14.0, macOS 26.5.2 (25F84) [Darwin 25.5.0]
-Intel Xeon W-3245 CPU 3.20GHz, 1 CPU, 32 logical and 16 physical cores
-.NET SDK 10.0.302
-  [Host]     : .NET 10.0.10, X64 AOT AVX2
-  DefaultJob : .NET 10.0.10, X64 RyuJIT AVX2
-```
+### Key Microarchitecture Observations
 
-### Full Benchmark Summary Table
+1. **Lock-Free SPSC Ring Buffer (`1.28 ns` vs `2.05 ns`)**:
+   * SPSC push/pop completes in **~5.6 CPU clock cycles** on Apple M3 Pro (**1.61x faster** than Intel Xeon).
+   * 128-byte explicit cache-line padding (`[StructLayout(LayoutKind.Explicit)]`) isolated atomic `_head` and `_tail` sequences across both Apple Silicon M3 Pro (128B lines) and Intel Xeon (64B lines) with **0 Bytes allocated**.
 
-| Benchmark Method | Mean Latency | Error | StdDev | Throughput (Ops/sec) | Ratio vs SPSC | Allocated |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **`SpscRingBuffer_PushAndPop`** | **2.054 ns** | **0.0060 ns** | **0.0053 ns** | **486,854,917 ops/sec** | **1.00 (Baseline)** | **0 B** |
-| `ConcurrentQueue_PushAndPop` | 12.252 ns | 0.0294 ns | 0.0275 ns | 81,619,327 ops/sec | 5.97x slower | 0 B |
-| `SystemThreadingChannel_PushAndPop` | 45.225 ns | 0.0960 ns | 0.0898 ns | 22,111,663 ops/sec | 22.02x slower | 0 B |
-| **`DecodeAndEnqueueBinaryFrame` (Gateway)**| **4.361 ns** | **0.0124 ns** | **0.0103 ns** | **229,305,205 ops/sec** | — | **0 B** |
-| **`MatchOrderPair` (Matching Engine)** | **40.680 ns** | **0.1060 ns** | **0.0940 ns** | **24,582,104 pairs/sec** <br> *(49,164,208 orders/sec)* | — | **0 B** |
+2. **Binary Wire Protocol Decoding & Gateway Enqueue (`2.79 ns` vs `4.36 ns`)**:
+   * Binary protocol frame deserialization via `MemoryMarshal` zero-copy struct casting and enqueuing onto the ring buffer completes in **2.79 nanoseconds** on Apple M3 Pro (**1.56x faster**).
+
+3. **Matching Engine Core Loop (`22.62 ns` vs `40.68 ns`)**:
+   * Order placement, price level traversal, FIFO matching, response emission, and object recycling executed in **22.62 nanoseconds** on M3 Pro (**1.80x faster** than Intel Xeon).
+   * **Single-Threaded Throughput:** Increased from 24.58 Million match pairs/sec on Xeon to **44.21 Million match pairs/sec** (**88.42 Million orders/sec**) on Apple M3 Pro.
 
 ---
 
-## CPU Hardware Clock Cycle & Xeon Performance Note
+### Microarchitecture Benchmark Comparison: Intel Xeon W-3245 vs. Apple M3 Pro
+
+| Benchmark Suite | Benchmark Method | Intel Xeon W-3245 (3.20 GHz x86_64) | Apple M3 Pro (Arm64) | Latency Reduction | Throughput (Apple M3 Pro) | Managed Heap Allocations |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **`SpscRingBufferBenchmark`** | **`SpscRingBuffer_PushAndPop`** (Baseline) | **2.054 ns** | **1.279 ns** | **-37.7%** | **781,860,828 ops/sec** | **0 B** |
+| | `ConcurrentQueue_PushAndPop` | 12.252 ns | 2.974 ns | -75.7% | 336,247,478 ops/sec | 0 B |
+| | `SystemThreadingChannel_PushAndPop` | 45.225 ns | 15.614 ns | -65.5% | 64,045,087 ops/sec | 0 B |
+| **`OrderServerBenchmark`** | **`DecodeAndEnqueueBinaryFrame` (Gateway)** | **4.361 ns** | **2.788 ns** | **-36.1%** | **358,679,997 ops/sec** | **0 B** |
+| **`MatchingEngineBenchmark`** | **`MatchOrderPair` (Matching Engine)** | **40.680 ns** | **22.620 ns** | **-44.4%** | **44,208,665 pairs/sec** <br> *(88,417,330 orders/sec)* | **0 B** |
+
+---
+
+## CPU Hardware Clock Cycle & Performance Breakdown
 
 > [!IMPORTANT]
-> **CPU Hardware Clock Cycle Breakdown (Intel Xeon W-3245 @ 3.20 GHz):**
+> **Hardware Execution Breakdown:**
 > 
-> The benchmarked processor is a moderate-frequency Intel Xeon W-3245 running at 3.20 GHz (~0.3125 nanoseconds per CPU clock cycle):
-> 
-> * **`SpscRingBuffer` Push & Pop (`2.054 ns`):** Takes **~6 CPU clock cycles total** for a full lock-free enqueue + dequeue!
-> * **`MatchOrderPair` (`40.68 ns`):** Takes **~130 CPU clock cycles total** to receive two orders, traverse price levels, execute the FIFO match, emit responses, and recycle memory pool nodes!
-> 
-> **Production HFT Server Scaling:**
-> On modern high-frequency trading server CPUs (such as AMD EPYC 9004 or Intel Xeon Max clocked at 4.5–5.0 GHz, or Apple Silicon M4 at 4.4 GHz), execution latency drops below **25 nanoseconds**, scaling single-thread throughput past **40 million match pairs / 80+ million orders per second**!
+> * **`SpscRingBuffer` Push & Pop (`1.279 ns` on M3 Pro / `2.054 ns` on Xeon):** Takes **~5.6 CPU clock cycles total** for a full lock-free enqueue + dequeue cycle!
+> * **`MatchOrderPair` (`22.62 ns` on M3 Pro / `40.68 ns` on Xeon):** Takes **~90 CPU clock cycles total** to receive two orders, traverse price levels, execute FIFO matching, emit client responses, and recycle memory pool nodes with zero GC pressure!
+> * **Throughput:** Apple M3 Pro achieves **44.2 Million matched pairs / second** (**88.4 Million orders/sec**) single-threaded!
 
 ---
 
