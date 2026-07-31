@@ -145,7 +145,19 @@ dotnet publish LowLatency.ScratchPad.Benchmarks/LowLatency.ScratchPad.Benchmarks
 # Execute published benchmark host binary
 ./LowLatency.ScratchPad.Benchmarks/bin/Release/net10.0/osx-arm64/publish/LowLatency.ScratchPad.Benchmarks --filter "*"
 ```
+
 > **Important Note on Native AOT:** Core engine/library projects (`LowLatency.ScratchPad.Engine.csproj`) **CAN and SHOULD** use `<PublishAot>true</PublishAot>` to guarantee zero-pause, bare-metal native binaries. However, BenchmarkDotNet host runner projects (`LowLatency.ScratchPad.Benchmarks.csproj`) **MUST NOT** enable `<PublishAot>true</PublishAot>` because BenchmarkDotNet's host CLI parser (`CommandLineParser`) relies on reflection metadata that Native AOT IL trimming strips out.
+
+
+### 4. Stochastic Mutation Testing (`watchfails` Branch Spike)
+To inspect or run a stochastic mutation test pass (fault injection audit):
+1. Switch to the dedicated `watchfails` demonstration branch:
+   ```bash
+   git checkout watchfails
+   ```
+2. The `watchfails` branch maintains an explicit step-by-step commit history demonstrating 8 deliberate production mutations (off-by-one bounds, mask errors, memory barrier bypasses, pool node leaks) alongside their corresponding test failures and green restorations.
+3. Review [WatchTestFailures.md](file:///Users/kenmccormack/low-latency-scratchpad/WatchTestFailures.md) on the `watchfails` branch for the full fault injection matrix and remediation details.
+4. To request a new mutation testing audit during development, simply instruct the agent: *"Run a stochastic mutation test pass."*
 
 ---
 
