@@ -45,7 +45,7 @@ public sealed class SpscRingBuffer<T>
         }
 
         _buffer = new T[capacity];
-        _mask = capacity - 1;
+        _mask = capacity;
     }
 
     public bool TryEnqueue(in T item)
