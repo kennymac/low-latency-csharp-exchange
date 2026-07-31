@@ -244,4 +244,26 @@ public class OrderBookTest : IClientResponseListener, IMarketUpdateListener
         // Assert zero bytes allocated on the managed heap
         totalAllocatedBytes.Should().Be(0, "no bytes should be allocated to the managed heap");
     }
+
+    [Fact]
+    public void Add_GivenHighVolumeOrderCycle_ThenRecyclesPoolNodesWithoutLeaking()
+    {
+        // Arrange - OrderBook initialized with default pool capacity (10,000 nodes)
+        var book = new OrderBook(tickerId: 1, clientResponseListener: null, marketUpdateListener: null);
+
+        // Act - Execute 20,000 matching pairs (40,000 total orders).
+        // If node deallocation is omitted or broken, the pool will exhaust its 10,000 nodes and throw/fail.
+        for (var i = 1uL; i <= 20_000uL; i++)
+        {
+            var clientId1 = (uint)(i % 50) + 1;
+            var clientId2 = (uint)((i + 1) % 50) + 1;
+
+            book.Add(clientId: clientId1, clientOrderId: i, side: Side.Sell, price: 100, qty: 10);
+            book.Add(clientId: clientId2, clientOrderId: i + 1_000_000, side: Side.Buy, price: 100, qty: 10);
+        }
+
+        // Assert
+        book.AsksByPrice.Should().BeNull("All sell orders should be fully matched and nodes returned to the pool");
+        book.BidsByPrice.Should().BeNull("All buy orders should be fully matched and nodes returned to the pool");
+    }
 }

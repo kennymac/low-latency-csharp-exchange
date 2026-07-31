@@ -70,6 +70,44 @@ public class OrderServerTest
     }
 
     [Fact]
+    public void TryReceiveRequest_GivenUndersizedBinaryFrame_ThenReturnsFalse()
+    {
+        // Arrange
+        var server = new OrderServer(inboundCapacity: 16, outboundCapacity: 16);
+        Span<byte> undersizedFrame = stackalloc byte[Unsafe.SizeOf<ClientRequest>() - 1];
+
+        // Act
+        var success = server.TryReceiveRequest(binaryFrame: undersizedFrame, out var parsedRequest);
+
+        // Assert
+        success.Should().BeFalse("Undersized binary frames smaller than SizeOf<ClientRequest>() must be rejected");
+        parsedRequest.Should().Be(default(ClientRequest));
+    }
+
+    [Fact]
+    public void TryReceiveRequest_GivenFullInboundBuffer_ThenReturnsFalse()
+    {
+        // Arrange
+        const int capacity = 16;
+        var server = new OrderServer(inboundCapacity: capacity, outboundCapacity: capacity);
+        var req = new ClientRequest(clientId: 1, clientOrderId: 1, tickerId: 1, side: Side.Buy, price: 100, qty: 10);
+        Span<byte> frame = stackalloc byte[Unsafe.SizeOf<ClientRequest>()];
+        MemoryMarshal.Write(frame, in req);
+
+        // Fill inbound buffer to capacity
+        for (var i = 0; i < capacity; i++)
+        {
+            server.TryReceiveRequest(binaryFrame: frame, out _).Should().BeTrue();
+        }
+
+        // Act - Attempt to enqueue 17th request into full buffer
+        var overflowSuccess = server.TryReceiveRequest(binaryFrame: frame, out _);
+
+        // Assert
+        overflowSuccess.Should().BeFalse("Enqueuing into a full inbound buffer must return false");
+    }
+
+    [Fact]
     public void EnqueueRequestAndTryDequeue_GivenMultipleRequests_ThenTransfersLockFreelyInFifoOrder()
     {
         // Arrange
