@@ -230,7 +230,7 @@ public sealed class OrderBook
         ref uint leavesQty)
     {
         var makerOrderQty = makerOrder.Qty;
-        var fillQty = makerOrderQty;
+        var fillQty = Math.Min(leavesQty, makerOrderQty);
 
         leavesQty -= fillQty;
         makerOrder.Qty -= fillQty;
