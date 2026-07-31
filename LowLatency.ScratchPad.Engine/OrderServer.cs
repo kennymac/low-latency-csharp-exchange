@@ -28,7 +28,8 @@ public sealed class OrderServer
         }
 
         request = MemoryMarshal.Read<ClientRequest>(binaryFrame);
-        return _requestBuffer.TryEnqueue(in request);
+        _requestBuffer.TryEnqueue(in request);
+        return true;
     }
 
     public bool EnqueueRequest(in ClientRequest request)
