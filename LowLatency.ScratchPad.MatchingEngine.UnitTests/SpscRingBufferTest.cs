@@ -1,13 +1,9 @@
 #pragma warning disable CS8602
 #pragma warning disable xUnit1051
 
-using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using LowLatency.ScratchPad.Engine;
-using Xunit;
-using AwesomeAssertions;
 
 namespace LowLatency.ScratchPad.MatchingEngine.UnitTests;
 

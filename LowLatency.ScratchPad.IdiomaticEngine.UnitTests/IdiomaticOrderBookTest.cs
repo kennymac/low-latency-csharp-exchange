@@ -1,6 +1,5 @@
 #pragma warning disable CS8602
 
-using LowLatency.ScratchPad.IdiomaticEngine;
 using LowLatency.ScratchPad.IdiomaticEngine.Model;
 
 namespace LowLatency.ScratchPad.IdiomaticEngine.UnitTests;

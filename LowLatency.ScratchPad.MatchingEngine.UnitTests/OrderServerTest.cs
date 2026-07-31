@@ -1,12 +1,9 @@
 #pragma warning disable CS8602
 
-using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using LowLatency.ScratchPad.Engine;
 using LowLatency.ScratchPad.Engine.Model;
-using Xunit;
-using AwesomeAssertions;
 
 namespace LowLatency.ScratchPad.MatchingEngine.UnitTests;
 

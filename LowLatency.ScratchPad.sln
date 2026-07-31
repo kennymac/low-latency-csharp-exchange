@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Engine", "Engine", "{6369C561-0874-42CF-B133-BC053DAF1749}"
 EndProject
@@ -7,6 +7,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LowLatency.ScratchPad.MatchingEngine.UnitTests", "LowLatency.ScratchPad.MatchingEngine.UnitTests\LowLatency.ScratchPad.MatchingEngine.UnitTests.csproj", "{E2736A02-BB05-4A9D-A418-539862CEA1A9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LowLatency.ScratchPad.Benchmarks", "LowLatency.ScratchPad.Benchmarks\LowLatency.ScratchPad.Benchmarks.csproj", "{F7C8A910-12DE-4890-95AA-123456789ABC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LowLatency.ScratchPad.CoyoteTests", "LowLatency.ScratchPad.CoyoteTests\LowLatency.ScratchPad.CoyoteTests.csproj", "{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LowLatency.ScratchPad.PropertyBasedTests", "LowLatency.ScratchPad.PropertyBasedTests\LowLatency.ScratchPad.PropertyBasedTests.csproj", "{B2C3D4E5-F6A7-8901-BCDE-F12345678901}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentation", "{8CA68B1D-66B9-4026-97A2-50D5D62F3CED}"
 	ProjectSection(SolutionItems) = preProject
@@ -100,6 +104,10 @@ Global
 		{781E3F8C-B7ED-423B-B5EF-93AC2F1F0411}.Release|x64.Build.0 = Release|Any CPU
 		{781E3F8C-B7ED-423B-B5EF-93AC2F1F0411}.Release|x86.ActiveCfg = Release|Any CPU
 		{781E3F8C-B7ED-423B-B5EF-93AC2F1F0411}.Release|x86.Build.0 = Release|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2C3D4E5-F6A7-8901-BCDE-F12345678901}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2C3D4E5-F6A7-8901-BCDE-F12345678901}.Debug|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -108,6 +116,8 @@ Global
 		{893D248E-2621-459B-AC49-C8A2DBD438D3} = {6369C561-0874-42CF-B133-BC053DAF1749}
 		{E2736A02-BB05-4A9D-A418-539862CEA1A9} = {6369C561-0874-42CF-B133-BC053DAF1749}
 		{F7C8A910-12DE-4890-95AA-123456789ABC} = {6369C561-0874-42CF-B133-BC053DAF1749}
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890} = {6369C561-0874-42CF-B133-BC053DAF1749}
+		{B2C3D4E5-F6A7-8901-BCDE-F12345678901} = {6369C561-0874-42CF-B133-BC053DAF1749}
 		{605D4F9B-5411-4866-BFEE-767C2697AA6D} = {2542C50C-4546-4E04-9062-E2855D0BE1FE}
 		{781E3F8C-B7ED-423B-B5EF-93AC2F1F0411} = {2542C50C-4546-4E04-9062-E2855D0BE1FE}
 	EndGlobalSection
