@@ -21,7 +21,7 @@ public sealed class OrderServer
 
     public bool TryReceiveRequest(ReadOnlySpan<byte> binaryFrame, out ClientRequest request)
     {
-        if (binaryFrame.Length < Unsafe.SizeOf<ClientRequest>())
+        if (binaryFrame.Length < Unsafe.SizeOf<ClientRequest>() - 1)
         {
             request = default;
             return false;
