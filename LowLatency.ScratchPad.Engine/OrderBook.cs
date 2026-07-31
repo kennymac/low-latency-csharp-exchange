@@ -364,7 +364,7 @@ public sealed class OrderBook
         }
 
         _clientOrderMap[ClientOrderToIndex(clientId: order.ClientId, clientOrderId: order.ClientOrderId)] = null;
-        _orderPool.Deallocate(order);
+        // _orderPool.Deallocate(order);
     }
 
     private void AddOrdersAtPrice(OrdersAtPrice newOrdersAtPrice)
