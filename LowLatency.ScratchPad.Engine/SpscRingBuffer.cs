@@ -59,7 +59,7 @@ public sealed class SpscRingBuffer<T>
         }
 
         _buffer[write & (ulong)_mask] = item;
-        Volatile.Write(ref _sequence.WriteIndex, write + 1);
+        _sequence.WriteIndex = write + 1;
         return true;
     }
 
