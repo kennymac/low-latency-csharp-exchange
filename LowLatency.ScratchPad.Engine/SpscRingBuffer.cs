@@ -53,7 +53,7 @@ public sealed class SpscRingBuffer<T>
         var write = _sequence.WriteIndex;
         var read = Volatile.Read(ref _sequence.ReadIndex);
 
-        if ((int)(write - read) > Capacity)
+        if ((int)(write - read) >= Capacity)
         {
             return false;
         }
