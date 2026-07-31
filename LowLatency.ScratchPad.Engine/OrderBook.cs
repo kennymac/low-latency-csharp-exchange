@@ -184,7 +184,7 @@ public sealed class OrderBook
             while (leavesQty > 0 && _asksByPrice != null)
             {
                 var askItr = _asksByPrice.FirstOrder!;
-                if (price < askItr.Price)
+                if (price <= askItr.Price)
                 {
                     break;
                 }
