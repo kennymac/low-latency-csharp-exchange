@@ -219,6 +219,8 @@ dotnet run -c Release --project LowLatency.ScratchPad.Benchmarks/LowLatency.Scra
 * [08 BenchmarkDotNet Profiling Harness and Allocation Verification in CSharp.md](Documentation/08%20BenchmarkDotNet%20Profiling%20Harness%20and%20Allocation%20Verification%20in%20CSharp.md)
 * [09 Native AOT Compilation and Bare Metal CSharp Performance.md](Documentation/09%20Native%20AOT%20Compilation%20and%20Bare%20Metal%20CSharp%20Performance.md)
 * [10 Hardware Microarchitecture Benchmark Comparison Intel Xeon vs Apple M3 Pro vs Apple M1.md](Documentation/10%20Hardware%20Microarchitecture%20Benchmark%20Comparison%20Intel%20Xeon%20vs%20Apple%20M3%20Pro%20vs%20Apple%20M1.md)
+* [11 Systematic Mutation Testing and Fault Injection Audit.md](Documentation/11%20Systematic%20Mutation%20Testing%20and%20Fault%20Injection%20Audit.md)
+* [12 Bug Addendum Academic Spikes vs Production Exchange Defect Analysis.md](Documentation/12%20Bug%20Addendum%20Academic%20Spikes%20vs%20Production%20Exchange%20Defect%20Analysis.md)
 
 
 --- 

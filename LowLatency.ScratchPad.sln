@@ -25,6 +25,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentat
 		Documentation\08 BenchmarkDotNet Profiling Harness and Allocation Verification in CSharp.md = Documentation\08 BenchmarkDotNet Profiling Harness and Allocation Verification in CSharp.md
 		Documentation\09 Native AOT Compilation and Bare Metal CSharp Performance.md = Documentation\09 Native AOT Compilation and Bare Metal CSharp Performance.md
 		Documentation\10 Hardware Microarchitecture Benchmark Comparison Intel Xeon vs Apple M3 Pro vs Apple M1.md = Documentation\10 Hardware Microarchitecture Benchmark Comparison Intel Xeon vs Apple M3 Pro vs Apple M1.md
+		Documentation\11 Systematic Mutation Testing and Fault Injection Audit.md = Documentation\11 Systematic Mutation Testing and Fault Injection Audit.md
+		Documentation\12 Bug Addendum Academic Spikes vs Production Exchange Defect Analysis.md = Documentation\12 Bug Addendum Academic Spikes vs Production Exchange Defect Analysis.md
 		README.md = README.md
 	EndProjectSection
 EndProject
