@@ -15,12 +15,12 @@ public class OrderServerTest
         // Arrange
         var server = new OrderServer(inboundCapacity: 16, outboundCapacity: 16);
         var expectedRequest = new ClientRequest(
-            clientId: 1,
-            clientOrderId: 101,
-            tickerId: 10,
-            side: Side.Buy,
-            price: 150,
-            qty: 100);
+            ClientId: 1,
+            ClientOrderId: 101,
+            TickerId: 10,
+            Side: Side.Buy,
+            Price: 150,
+            Qty: 100);
 
         Span<byte> binaryFrame = stackalloc byte[Unsafe.SizeOf<ClientRequest>()];
         MemoryMarshal.Write(binaryFrame, in expectedRequest);
@@ -32,12 +32,12 @@ public class OrderServerTest
         // Assert
         receivedSuccess.Should().BeTrue();
         dequeueSuccess.Should().BeTrue();
-        dequeuedRequest.clientId.Should().Be(1);
-        dequeuedRequest.clientOrderId.Should().Be(101);
-        dequeuedRequest.tickerId.Should().Be(10);
-        dequeuedRequest.side.Should().Be(Side.Buy);
-        dequeuedRequest.price.Should().Be(150);
-        dequeuedRequest.qty.Should().Be(100);
+        dequeuedRequest.ClientId.Should().Be(1);
+        dequeuedRequest.ClientOrderId.Should().Be(101);
+        dequeuedRequest.TickerId.Should().Be(10);
+        dequeuedRequest.Side.Should().Be(Side.Buy);
+        dequeuedRequest.Price.Should().Be(150);
+        dequeuedRequest.Qty.Should().Be(100);
     }
 
     [Fact]
@@ -45,15 +45,15 @@ public class OrderServerTest
     {
         // Arrange
         var response = new ClientResponse(
-            type: ClientResponseType.Filled,
-            clientId: 1,
-            tickerId: 10,
-            clientOrderId: 101,
-            marketOrderId: 5_001,
-            side: Side.Buy,
-            price: 150,
-            execQty: 50,
-            leavesQty: 50);
+            Type: ClientResponseType.Filled,
+            ClientId: 1,
+            TickerId: 10,
+            ClientOrderId: 101,
+            MarketOrderId: 5_001,
+            Side: Side.Buy,
+            Price: 150,
+            ExecQty: 50,
+            LeavesQty: 50);
 
         Span<byte> destination = stackalloc byte[Unsafe.SizeOf<ClientResponse>()];
 
@@ -63,10 +63,10 @@ public class OrderServerTest
 
         // Assert
         writtenBytes.Should().Be(Unsafe.SizeOf<ClientResponse>());
-        decodedResponse.type.Should().Be(ClientResponseType.Filled);
-        decodedResponse.clientId.Should().Be(1);
-        decodedResponse.clientOrderId.Should().Be(101);
-        decodedResponse.execQty.Should().Be(50);
+        decodedResponse.Type.Should().Be(ClientResponseType.Filled);
+        decodedResponse.ClientId.Should().Be(1);
+        decodedResponse.ClientOrderId.Should().Be(101);
+        decodedResponse.ExecQty.Should().Be(50);
     }
 
     [Fact]
@@ -74,8 +74,8 @@ public class OrderServerTest
     {
         // Arrange
         var server = new OrderServer(inboundCapacity: 16, outboundCapacity: 16);
-        var req1 = new ClientRequest(clientId: 1, clientOrderId: 1, tickerId: 1, side: Side.Buy, price: 100, qty: 10);
-        var req2 = new ClientRequest(clientId: 2, clientOrderId: 2, tickerId: 1, side: Side.Sell, price: 105, qty: 5);
+        var req1 = new ClientRequest(ClientId: 1, ClientOrderId: 1, TickerId: 1, Side: Side.Buy, Price: 100, Qty: 10);
+        var req2 = new ClientRequest(ClientId: 2, ClientOrderId: 2, TickerId: 1, Side: Side.Sell, Price: 105, Qty: 5);
 
         // Act
         server.EnqueueRequest(request: req1);
@@ -86,10 +86,10 @@ public class OrderServerTest
 
         // Assert
         success1.Should().BeTrue();
-        dequeued1.clientId.Should().Be(1);
+        dequeued1.ClientId.Should().Be(1);
 
         success2.Should().BeTrue();
-        dequeued2.clientId.Should().Be(2);
+        dequeued2.ClientId.Should().Be(2);
     }
 
     [Fact]
@@ -97,7 +97,7 @@ public class OrderServerTest
     {
         // Arrange
         var server = new OrderServer(inboundCapacity: 16_384, outboundCapacity: 16_384);
-        var sampleRequest = new ClientRequest(clientId: 1, clientOrderId: 1, tickerId: 1, side: Side.Buy, price: 100, qty: 10);
+        var sampleRequest = new ClientRequest(ClientId: 1, ClientOrderId: 1, TickerId: 1, Side: Side.Buy, Price: 100, Qty: 10);
 
         Span<byte> binaryFrame = stackalloc byte[Unsafe.SizeOf<ClientRequest>()];
         MemoryMarshal.Write(binaryFrame, in sampleRequest);

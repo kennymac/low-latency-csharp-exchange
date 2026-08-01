@@ -16,7 +16,7 @@ public class OrderServerBenchmark
     public void Setup()
     {
         _server = new OrderServer(inboundCapacity: 16_384, outboundCapacity: 16_384);
-        var req = new ClientRequest(clientId: 1, clientOrderId: 101, tickerId: 1, side: Side.Buy, price: 150, qty: 100);
+        var req = new ClientRequest(ClientId: 1, ClientOrderId: 101, TickerId: 1, Side: Side.Buy, Price: 150, Qty: 100);
 
         _binaryFrame = new byte[Unsafe.SizeOf<ClientRequest>()];
         MemoryMarshal.Write(_binaryFrame, in req);

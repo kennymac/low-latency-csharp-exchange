@@ -40,12 +40,12 @@ public class OrderBookTest : IClientResponseListener, IMarketUpdateListener
         book.AsksByPrice.FirstOrder.Qty.Should().Be(5);
 
         _responses.Should().HaveCount(2);
-        _responses[0].type.Should().Be(ClientResponseType.Accepted);
-        _responses[1].type.Should().Be(ClientResponseType.Accepted);
+        _responses[0].Type.Should().Be(ClientResponseType.Accepted);
+        _responses[1].Type.Should().Be(ClientResponseType.Accepted);
 
         _updates.Should().HaveCount(2);
-        _updates[0].type.Should().Be(MarketUpdateType.Add);
-        _updates[1].type.Should().Be(MarketUpdateType.Add);
+        _updates[0].Type.Should().Be(MarketUpdateType.Add);
+        _updates[1].Type.Should().Be(MarketUpdateType.Add);
     }
 
     [Fact]
@@ -64,23 +64,23 @@ public class OrderBookTest : IClientResponseListener, IMarketUpdateListener
         book.AsksByPrice.Should().BeNull();
 
         _responses.Should().HaveCount(3);
-        _responses[0].type.Should().Be(ClientResponseType.Accepted);
-        _responses[0].clientId.Should().Be(2);
+        _responses[0].Type.Should().Be(ClientResponseType.Accepted);
+        _responses[0].ClientId.Should().Be(2);
 
-        _responses[1].type.Should().Be(ClientResponseType.Filled);
-        _responses[1].clientId.Should().Be(2);
-        _responses[1].execQty.Should().Be(10);
-        _responses[1].leavesQty.Should().Be(0);
+        _responses[1].Type.Should().Be(ClientResponseType.Filled);
+        _responses[1].ClientId.Should().Be(2);
+        _responses[1].ExecQty.Should().Be(10);
+        _responses[1].LeavesQty.Should().Be(0);
 
-        _responses[2].type.Should().Be(ClientResponseType.Filled);
-        _responses[2].clientId.Should().Be(1);
-        _responses[2].execQty.Should().Be(10);
-        _responses[2].leavesQty.Should().Be(0);
+        _responses[2].Type.Should().Be(ClientResponseType.Filled);
+        _responses[2].ClientId.Should().Be(1);
+        _responses[2].ExecQty.Should().Be(10);
+        _responses[2].LeavesQty.Should().Be(0);
 
         _updates.Should().HaveCount(2);
-        _updates[0].type.Should().Be(MarketUpdateType.Trade);
-        _updates[0].qty.Should().Be(10);
-        _updates[1].type.Should().Be(MarketUpdateType.Cancel);
+        _updates[0].Type.Should().Be(MarketUpdateType.Trade);
+        _updates[0].Qty.Should().Be(10);
+        _updates[1].Type.Should().Be(MarketUpdateType.Cancel);
     }
 
     [Fact]
@@ -102,11 +102,11 @@ public class OrderBookTest : IClientResponseListener, IMarketUpdateListener
         book.BidsByPrice.FirstOrder.Qty.Should().Be(7);
 
         _responses.Should().HaveCount(3);
-        _responses[1].execQty.Should().Be(5);
-        _responses[1].leavesQty.Should().Be(7);
+        _responses[1].ExecQty.Should().Be(5);
+        _responses[1].LeavesQty.Should().Be(7);
 
-        _responses[2].execQty.Should().Be(5);
-        _responses[2].leavesQty.Should().Be(0);
+        _responses[2].ExecQty.Should().Be(5);
+        _responses[2].LeavesQty.Should().Be(0);
     }
 
     [Fact]
@@ -127,15 +127,15 @@ public class OrderBookTest : IClientResponseListener, IMarketUpdateListener
         book.AsksByPrice.FirstOrder.ClientId.Should().Be(2);
         book.AsksByPrice.FirstOrder.Qty.Should().Be(3);
 
-        var makerFills = _responses.Where(r => r.type == ClientResponseType.Filled && r.clientId != 3).ToList();
+        var makerFills = _responses.Where(r => r.Type == ClientResponseType.Filled && r.ClientId != 3).ToList();
         makerFills.Should().HaveCount(2);
 
-        makerFills[0].clientId.Should().Be(1);
-        makerFills[0].execQty.Should().Be(5);
+        makerFills[0].ClientId.Should().Be(1);
+        makerFills[0].ExecQty.Should().Be(5);
 
-        makerFills[1].clientId.Should().Be(2);
-        makerFills[1].execQty.Should().Be(2);
-        makerFills[1].leavesQty.Should().Be(3);
+        makerFills[1].ClientId.Should().Be(2);
+        makerFills[1].ExecQty.Should().Be(2);
+        makerFills[1].LeavesQty.Should().Be(3);
     }
 
     [Fact]
@@ -151,17 +151,17 @@ public class OrderBookTest : IClientResponseListener, IMarketUpdateListener
         book.Add(clientId: 3, clientOrderId: 200, side: Side.Buy, price: 105, qty: 8);
 
         // Assert
-        var makerFills = _responses.Where(r => r.type == ClientResponseType.Filled && r.clientId != 3).ToList();
+        var makerFills = _responses.Where(r => r.Type == ClientResponseType.Filled && r.ClientId != 3).ToList();
         makerFills.Should().HaveCount(2);
 
-        makerFills[0].clientId.Should().Be(1);
-        makerFills[0].price.Should().Be(100);
-        makerFills[0].execQty.Should().Be(5);
+        makerFills[0].ClientId.Should().Be(1);
+        makerFills[0].Price.Should().Be(100);
+        makerFills[0].ExecQty.Should().Be(5);
 
-        makerFills[1].clientId.Should().Be(2);
-        makerFills[1].price.Should().Be(101);
-        makerFills[1].execQty.Should().Be(3);
-        makerFills[1].leavesQty.Should().Be(2);
+        makerFills[1].ClientId.Should().Be(2);
+        makerFills[1].Price.Should().Be(101);
+        makerFills[1].ExecQty.Should().Be(3);
+        makerFills[1].LeavesQty.Should().Be(2);
 
         book.AsksByPrice.Should().NotBeNull();
         book.AsksByPrice.Price.Should().Be(101);
@@ -184,12 +184,12 @@ public class OrderBookTest : IClientResponseListener, IMarketUpdateListener
         book.BidsByPrice.Should().BeNull();
 
         _responses.Should().HaveCount(1);
-        _responses[0].type.Should().Be(ClientResponseType.Canceled);
-        _responses[0].clientId.Should().Be(1);
-        _responses[0].clientOrderId.Should().Be(100);
+        _responses[0].Type.Should().Be(ClientResponseType.Canceled);
+        _responses[0].ClientId.Should().Be(1);
+        _responses[0].ClientOrderId.Should().Be(100);
 
         _updates.Should().HaveCount(1);
-        _updates[0].type.Should().Be(MarketUpdateType.Cancel);
+        _updates[0].Type.Should().Be(MarketUpdateType.Cancel);
     }
 
     [Fact]
@@ -204,9 +204,9 @@ public class OrderBookTest : IClientResponseListener, IMarketUpdateListener
 
         // Assert
         _responses.Should().HaveCount(1);
-        _responses[0].type.Should().Be(ClientResponseType.CancelRejected);
-        _responses[0].clientId.Should().Be(99);
-        _responses[0].clientOrderId.Should().Be(999);
+        _responses[0].Type.Should().Be(ClientResponseType.CancelRejected);
+        _responses[0].ClientId.Should().Be(99);
+        _responses[0].ClientOrderId.Should().Be(999);
     }
 
     [Fact]

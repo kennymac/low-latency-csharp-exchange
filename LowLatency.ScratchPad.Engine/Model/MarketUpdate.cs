@@ -1,11 +1,11 @@
 namespace LowLatency.ScratchPad.Engine.Model;
 
 public readonly record struct MarketUpdate(
-    MarketUpdateType type,
-    ulong marketOrderId,
-    uint tickerId,
-    Side side,
-    long price,
-    uint qty,
-    ulong priority
+    MarketUpdateType Type,
+    ulong MarketOrderId,
+    uint TickerId,
+    Side Side,
+    long Price,
+    uint Qty,
+    ulong Priority
 );

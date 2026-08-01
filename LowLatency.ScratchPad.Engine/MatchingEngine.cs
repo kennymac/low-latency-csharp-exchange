@@ -71,15 +71,15 @@ public sealed class MatchingEngine
         else
         {
             _clientResponseListener?.OnClientResponse(new ClientResponse(
-                type: ClientResponseType.CancelRejected,
-                clientId: clientId,
-                tickerId: tickerId,
-                clientOrderId: clientOrderId,
-                marketOrderId: 0,
-                side: Side.Invalid,
-                price: 0,
-                execQty: 0,
-                leavesQty: 0));
+                Type: ClientResponseType.CancelRejected,
+                ClientId: clientId,
+                TickerId: tickerId,
+                ClientOrderId: clientOrderId,
+                MarketOrderId: 0,
+                Side: Side.Invalid,
+                Price: 0,
+                ExecQty: 0,
+                LeavesQty: 0));
         }
     }
 }

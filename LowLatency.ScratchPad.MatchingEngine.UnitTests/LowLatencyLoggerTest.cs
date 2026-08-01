@@ -57,8 +57,8 @@ public class LowLatencyLoggerTest
 
         // Assert
         flushedCount.Should().Be(2);
-        output.Should().Contain("[Info] Ticker:1 Client:10 OID:1001 Price:150 Qty:100");
-        output.Should().Contain("[Warning] Ticker:1 Client:20 OID:1002 Price:155 Qty:50");
+        output.Should().MatchRegex(@"\[Info\] TimeTicks:\d+ Ticker:1 Client:10 OID:1001 Price:150 Qty:100");
+        output.Should().MatchRegex(@"\[Warning\] TimeTicks:\d+ Ticker:1 Client:20 OID:1002 Price:155 Qty:50");
     }
 
     [Fact]

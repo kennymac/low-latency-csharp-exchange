@@ -1,10 +1,10 @@
 namespace LowLatency.ScratchPad.Engine.Model;
 
 public readonly record struct ClientRequest(
-    uint clientId,
-    ulong clientOrderId,
-    uint tickerId,
-    Side side,
-    long price,
-    uint qty
+    uint ClientId,
+    ulong ClientOrderId,
+    uint TickerId,
+    Side Side,
+    long Price,
+    uint Qty
 );

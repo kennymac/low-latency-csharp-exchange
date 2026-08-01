@@ -64,15 +64,15 @@ public sealed class OrderBook
         var marketOrderId = _nextMarketOrderId++;
 
         _clientResponseListener?.OnClientResponse(new ClientResponse(
-            type: ClientResponseType.Accepted,
-            clientId: clientId,
-            tickerId: TickerId,
-            clientOrderId: clientOrderId,
-            marketOrderId: marketOrderId,
-            side: side,
-            price: price,
-            execQty: 0,
-            leavesQty: qty));
+            Type: ClientResponseType.Accepted,
+            ClientId: clientId,
+            TickerId: TickerId,
+            ClientOrderId: clientOrderId,
+            MarketOrderId: marketOrderId,
+            Side: side,
+            Price: price,
+            ExecQty: 0,
+            LeavesQty: qty));
 
         var leavesQty = CheckForMatch(
             clientId: clientId,
@@ -101,13 +101,13 @@ public sealed class OrderBook
             AddOrder(order);
 
             _marketUpdateListener?.OnMarketUpdate(new MarketUpdate(
-                type: MarketUpdateType.Add,
-                marketOrderId: marketOrderId,
-                tickerId: TickerId,
-                side: side,
-                price: price,
-                qty: leavesQty,
-                priority: priority));
+                Type: MarketUpdateType.Add,
+                MarketOrderId: marketOrderId,
+                TickerId: TickerId,
+                Side: side,
+                Price: price,
+                Qty: leavesQty,
+                Priority: priority));
         }
     }
 
@@ -121,37 +121,37 @@ public sealed class OrderBook
         if (order == null || order.ClientId != clientId || order.ClientOrderId != clientOrderId)
         {
             _clientResponseListener?.OnClientResponse(new ClientResponse(
-                type: ClientResponseType.CancelRejected,
-                clientId: clientId,
-                tickerId: TickerId,
-                clientOrderId: clientOrderId,
-                marketOrderId: 0,
-                side: Side.Invalid,
-                price: 0,
-                execQty: 0,
-                leavesQty: 0));
+                Type: ClientResponseType.CancelRejected,
+                ClientId: clientId,
+                TickerId: TickerId,
+                ClientOrderId: clientOrderId,
+                MarketOrderId: 0,
+                Side: Side.Invalid,
+                Price: 0,
+                ExecQty: 0,
+                LeavesQty: 0));
             return;
         }
 
         _clientResponseListener?.OnClientResponse(new ClientResponse(
-            type: ClientResponseType.Canceled,
-            clientId: clientId,
-            tickerId: TickerId,
-            clientOrderId: clientOrderId,
-            marketOrderId: order.MarketOrderId,
-            side: order.Side,
-            price: order.Price,
-            execQty: 0,
-            leavesQty: order.Qty));
+            Type: ClientResponseType.Canceled,
+            ClientId: clientId,
+            TickerId: TickerId,
+            ClientOrderId: clientOrderId,
+            MarketOrderId: order.MarketOrderId,
+            Side: order.Side,
+            Price: order.Price,
+            ExecQty: 0,
+            LeavesQty: order.Qty));
 
         _marketUpdateListener?.OnMarketUpdate(new MarketUpdate(
-            type: MarketUpdateType.Cancel,
-            marketOrderId: order.MarketOrderId,
-            tickerId: TickerId,
-            side: order.Side,
-            price: order.Price,
-            qty: 0,
-            priority: order.Priority));
+            Type: MarketUpdateType.Cancel,
+            MarketOrderId: order.MarketOrderId,
+            TickerId: TickerId,
+            Side: order.Side,
+            Price: order.Price,
+            Qty: 0,
+            Priority: order.Priority));
 
         RemoveOrder(order);
     }
@@ -237,61 +237,61 @@ public sealed class OrderBook
 
         // Response to Taker
         _clientResponseListener?.OnClientResponse(new ClientResponse(
-            type: ClientResponseType.Filled,
-            clientId: takerClientId,
-            tickerId: TickerId,
-            clientOrderId: takerClientOrderId,
-            marketOrderId: takerMarketOrderId,
-            side: takerSide,
-            price: makerOrder.Price,
-            execQty: fillQty,
-            leavesQty: leavesQty));
+            Type: ClientResponseType.Filled,
+            ClientId: takerClientId,
+            TickerId: TickerId,
+            ClientOrderId: takerClientOrderId,
+            MarketOrderId: takerMarketOrderId,
+            Side: takerSide,
+            Price: makerOrder.Price,
+            ExecQty: fillQty,
+            LeavesQty: leavesQty));
 
         // Response to Maker
         _clientResponseListener?.OnClientResponse(new ClientResponse(
-            type: ClientResponseType.Filled,
-            clientId: makerOrder.ClientId,
-            tickerId: TickerId,
-            clientOrderId: makerOrder.ClientOrderId,
-            marketOrderId: makerOrder.MarketOrderId,
-            side: makerOrder.Side,
-            price: makerOrder.Price,
-            execQty: fillQty,
-            leavesQty: makerOrder.Qty));
+            Type: ClientResponseType.Filled,
+            ClientId: makerOrder.ClientId,
+            TickerId: TickerId,
+            ClientOrderId: makerOrder.ClientOrderId,
+            MarketOrderId: makerOrder.MarketOrderId,
+            Side: makerOrder.Side,
+            Price: makerOrder.Price,
+            ExecQty: fillQty,
+            LeavesQty: makerOrder.Qty));
 
         // Trade Market Update
         _marketUpdateListener?.OnMarketUpdate(new MarketUpdate(
-            type: MarketUpdateType.Trade,
-            marketOrderId: 0,
-            tickerId: TickerId,
-            side: takerSide,
-            price: makerOrder.Price,
-            qty: fillQty,
-            priority: 0));
+            Type: MarketUpdateType.Trade,
+            MarketOrderId: 0,
+            TickerId: TickerId,
+            Side: takerSide,
+            Price: makerOrder.Price,
+            Qty: fillQty,
+            Priority: 0));
 
         if (makerOrder.Qty == 0)
         {
             _marketUpdateListener?.OnMarketUpdate(new MarketUpdate(
-                type: MarketUpdateType.Cancel,
-                marketOrderId: makerOrder.MarketOrderId,
-                tickerId: TickerId,
-                side: makerOrder.Side,
-                price: makerOrder.Price,
-                qty: makerOrderQty,
-                priority: 0));
+                Type: MarketUpdateType.Cancel,
+                MarketOrderId: makerOrder.MarketOrderId,
+                TickerId: TickerId,
+                Side: makerOrder.Side,
+                Price: makerOrder.Price,
+                Qty: makerOrderQty,
+                Priority: 0));
 
             RemoveOrder(makerOrder);
         }
         else
         {
             _marketUpdateListener?.OnMarketUpdate(new MarketUpdate(
-                type: MarketUpdateType.Modify,
-                marketOrderId: makerOrder.MarketOrderId,
-                tickerId: TickerId,
-                side: makerOrder.Side,
-                price: makerOrder.Price,
-                qty: makerOrder.Qty,
-                priority: makerOrder.Priority));
+                Type: MarketUpdateType.Modify,
+                MarketOrderId: makerOrder.MarketOrderId,
+                TickerId: TickerId,
+                Side: makerOrder.Side,
+                Price: makerOrder.Price,
+                Qty: makerOrder.Qty,
+                Priority: makerOrder.Priority));
         }
     }
 

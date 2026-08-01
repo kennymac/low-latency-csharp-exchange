@@ -32,13 +32,13 @@ public sealed class LowLatencyLogger : IDisposable
         uint qty)
     {
         var entry = new LogEntry(
-            level: level,
-            timestampTicks: (ulong)DateTime.UtcNow.Ticks,
-            tickerId: tickerId,
-            clientId: clientId,
-            clientOrderId: clientOrderId,
-            price: price,
-            qty: qty);
+            Level: level,
+            TimestampTicks: (ulong)DateTime.UtcNow.Ticks,
+            TickerId: tickerId,
+            ClientId: clientId,
+            ClientOrderId: clientOrderId,
+            Price: price,
+            Qty: qty);
 
         return _ringBuffer.TryEnqueue(in entry);
     }
@@ -66,17 +66,19 @@ public sealed class LowLatencyLogger : IDisposable
     private void WriteEntryToStream(in LogEntry entry)
     {
         _writer.Write('[');
-        _writer.Write(entry.level.ToString());
-        _writer.Write("] Ticker:");
-        _writer.Write(entry.tickerId);
+        _writer.Write(entry.Level.ToString());
+        _writer.Write("] TimeTicks:");
+        _writer.Write(entry.TimestampTicks);
+        _writer.Write(" Ticker:");
+        _writer.Write(entry.TickerId);
         _writer.Write(" Client:");
-        _writer.Write(entry.clientId);
+        _writer.Write(entry.ClientId);
         _writer.Write(" OID:");
-        _writer.Write(entry.clientOrderId);
+        _writer.Write(entry.ClientOrderId);
         _writer.Write(" Price:");
-        _writer.Write(entry.price);
+        _writer.Write(entry.Price);
         _writer.Write(" Qty:");
-        _writer.WriteLine(entry.qty);
+        _writer.WriteLine(entry.Qty);
     }
 
     private void BackgroundFlushLoop(CancellationToken token)
