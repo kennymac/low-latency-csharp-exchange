@@ -8,6 +8,8 @@ public sealed class OrderBook
     public const int MaxPriceLevels = 1_000;
     public const int MaxClients = 100;
     public const int MaxOrdersPerClient = 1_000;
+    public const long MaxSupportedPrice = 1_000_000_000L;
+
 
     public uint TickerId { get; }
 
