@@ -259,22 +259,23 @@ public class OrderBookTest : IClientResponseListener, IMarketUpdateListener
         _responses.Clear();
         _updates.Clear();
 
-        // Taker buy order at 1150 should match the maker order at 1150, NOT the order at 150!
-        book.Add(clientId: 3, clientOrderId: 3, side: Side.Buy, price: 1150, qty: 5);
+        // Taker buy order at 150 should match the maker order at 150 (best ask price)
+        book.Add(clientId: 3, clientOrderId: 3, side: Side.Buy, price: 150, qty: 10);
 
         // Assert
         var makerFills = _responses.Where(r => r.Type == ClientResponseType.Filled && r.ClientId != 3).ToList();
         makerFills.Should().HaveCount(1);
-        makerFills[0].ClientId.Should().Be(2);
-        makerFills[0].Price.Should().Be(1150);
-        makerFills[0].ExecQty.Should().Be(5);
+        makerFills[0].ClientId.Should().Be(1);
+        makerFills[0].Price.Should().Be(150);
+        makerFills[0].ExecQty.Should().Be(10);
 
-        // The order at price 150 must still exist with full quantity 10
+        // The order at price 1150 must still exist untouched with full quantity 5
         book.AsksByPrice.Should().NotBeNull();
-        book.AsksByPrice.Price.Should().Be(150);
-        book.AsksByPrice.FirstOrder.Qty.Should().Be(10);
-        book.AsksByPrice.FirstOrder.ClientId.Should().Be(1);
+        book.AsksByPrice.Price.Should().Be(1150);
+        book.AsksByPrice.FirstOrder.Qty.Should().Be(5);
+        book.AsksByPrice.FirstOrder.ClientId.Should().Be(2);
     }
+
 
     [Fact]
     public void Cancel_GivenSequentialOrderIdsCollidingUnderModulo_ThenBothOrdersCanBeCancelledIndividually()

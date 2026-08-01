@@ -28,10 +28,12 @@ public sealed class MemPool<T> where T : class, new()
 
     public void Deallocate(T item)
     {
-        if (_nextAvailable < _pool.Length - 1)
+        if (_nextAvailable >= _pool.Length - 1)
         {
-            _nextAvailable++;
-            _pool[_nextAvailable] = item;
+            throw new InvalidOperationException($"MemPool overflow on Deallocate: pool of {typeof(T).Name} is already at full capacity.");
         }
+        _nextAvailable++;
+        _pool[_nextAvailable] = item;
     }
 }
+

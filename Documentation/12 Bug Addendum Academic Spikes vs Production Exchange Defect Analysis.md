@@ -69,7 +69,7 @@ typedef std::array<MEOrdersAtPrice *, ME_MAX_PRICE_LEVELS> OrdersAtPriceHashMap;
 
 ### Defect B: Client Order ID Hash Collision (`ClientOrderToIndex`)
 
-#### Original C++ vs C# Port
+#### Original C++ 2D Array vs C# 1D Array Translation Artifact
 In Sourav Ghosh's C++ code ([`Chapter12/exchange/matcher/me_order.h:L37-40`](file:///Users/kenmccormack/CodeKennos/books-llappswithcpp/Chapter12/exchange/matcher/me_order.h#L37-L40)):
 
 ```cpp
@@ -81,14 +81,16 @@ typedef std::array<OrderHashMap, ME_MAX_NUM_CLIENTS> ClientOrderHashMap;
 cid_oid_to_order_.at(client_id).at(client_order_id)
 ```
 
-In the C# port, to collapse this 2D space into a single 1D flat array, `ClientOrderToIndex` introduced modulo indexing:
+* **C++ Bounded Design**: In Ghosh's C++ codebase, `ClientOrderHashMap` was a massive **2D static array** (`100` clients $\times$ `1,000,000` order IDs). Under his bounded benchmark assumptions, direct 2D indexing `[client_id][client_order_id]` was mechanically sound for its intended scope and did NOT contain a client order collision bug.
+* **C# Translation Artifact**: During the C# translation, to collapse this multi-megabyte 2D nested array into a single 1D flat array `_clientOrderMap`, the agent introduced modulo indexing:
 ```csharp
 private int ClientOrderToIndex(uint clientId, ulong clientOrderId) 
     => (int)((clientId % MaxClients) * MaxOrdersPerClient + (clientOrderId % MaxOrdersPerClient));
 ```
 
-* **Failure Mechanism**: Client 1 issues sequential Order ID `1` and Order ID `1001`. Both resolve to slot `1001` because `1001 % 1000 == 1 % 1000`.
+* **Failure Mechanism**: Introducing `clientOrderId % MaxOrdersPerClient` (`% 1000`) caused sequential Order ID `1` and Order ID `1001` for Client 1 to map to identical slot `1001` (`1001 % 1000 == 1 % 1000`).
 * **Impact**: Order `1001` silently overwrites the tracking pointer for Order `1`. When Client 1 sends a cancel request for Order `1`, the engine returns `CancelRejected` because the map entry contains Order `1001`. Order `1` remains stranded in the book forever.
+
 
 
 ### Defect C: Silent Pool Overflow in `MemPool<T>`
@@ -147,4 +149,22 @@ To ensure every static boundary condition in the engine is enforced gracefully w
 | Price Upper Bound | `MaxSupportedPrice = 1,000,000,000L` | Rejects orders exceeding `MaxSupportedPrice` | `Add_GivenPriceExceedsMaxSupportedPrice_ThenOrderIsRejectedAndDoesNotCauseError` |
 | Price Lower Bound | `price <= 0` | Rejects orders with `price = 0` or negative prices | `Add_GivenZeroOrNegativePrice_ThenOrderIsRejectedAndDoesNotCauseError` |
 | Memory Pool Overflow | `_nextAvailable == capacity - 1` | Throws `InvalidOperationException` on pool overflow attempt | `Deallocate_GivenPoolIsFull_ThenThrowsInvalidOperationException` |
+
+---
+
+## 6. Realistic Volume System Benchmarking & Architectural Roadmap
+
+### A. The Risk of Misleading Benchmarks from Toy Numbers
+While hardcoded toy capacities (e.g. `MaxOrders = 10,000`, `MaxPriceLevels = 1,000`) serve to demonstrate the zero-allocation pattern, running microbenchmarks against artificially small data volumes yields misleading throughput and latency figures. In real-world market environments:
+* **Per-Symbol Isolation**: Each stock/instrument runs its own isolated `OrderBook` instance. Having 1,000 distinct price levels active at the exact same millisecond for a single stock is usually more than enough for normal trading depth.
+* **Cache Line Alignment & Footprint**:
+  * `2,048` price level slots = $16\text{ KB}$ memory footprint (fits entirely within L1 data cache).
+  * `32,768` client order slots = $256\text{ KB}$ memory footprint (fits inside L2 data cache).
+* **Production Volume Scaling**: Order books should support configurable capacities (e.g. `10,000` to `100,000` active orders per symbol) so that benchmarks accurately reflect production exchange workloads.
+
+### B. Future Event Simulation & Kafka Integration
+While achieving **0 Bytes managed heap allocation** on the hot execution path satisfies the core engine mandate, the architectural roadmap expands this matching engine to:
+1. **Event Streaming Integration**: Wire engine state transitions to high-throughput binary protocols and Kafka streams without breaking the zero-allocation guarantee.
+2. **Production-Volume Simulation**: Stress-test the engine under sustained millions-of-orders-per-second traffic with realistic market data distributions (Poisson arrival processes, wide spreads, and multi-symbol routing).
+
 

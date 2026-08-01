@@ -10,6 +10,11 @@ public sealed class OrderBook
     public const int MaxOrdersPerClient = 1_000;
     public const long MaxSupportedPrice = 1_000_000_000L;
 
+    private const int PriceMapCapacity = 2048; // Power of 2 (mask 2047)
+    private const int PriceMapMask = PriceMapCapacity - 1;
+
+    private const int ClientOrderMapCapacity = 32768; // Power of 2 (mask 32767)
+    private const int ClientOrderMapMask = ClientOrderMapCapacity - 1;
 
     public uint TickerId { get; }
 
@@ -22,8 +27,12 @@ public sealed class OrderBook
     private OrdersAtPrice? _bidsByPrice;
     private OrdersAtPrice? _asksByPrice;
 
-    private readonly OrdersAtPrice?[] _priceOrdersAtPrice;
-    private readonly Order?[] _clientOrderMap;
+    private readonly OrdersAtPrice?[] _priceOrdersAtPrice = new OrdersAtPrice?[PriceMapCapacity];
+    private readonly Order?[] _clientOrderMap = new Order?[ClientOrderMapCapacity];
+    private readonly ushort[] _clientOrderCounts = new ushort[MaxClients];
+
+    private int _activeOrdersCount;
+    private int _activePriceLevelsCount;
 
     private ulong _nextMarketOrderId = 1;
 
@@ -41,19 +50,171 @@ public sealed class OrderBook
 
         _orderPool = new MemPool<Order>(MaxOrders);
         _ordersAtPricePool = new MemPool<OrdersAtPrice>(MaxPriceLevels);
-
-        _priceOrdersAtPrice = new OrdersAtPrice?[MaxPriceLevels];
-        _clientOrderMap = new Order?[MaxClients * MaxOrdersPerClient];
     }
 
-    private int PriceToIndex(long price)
+    private static int HashClientOrder(uint clientId, ulong clientOrderId)
     {
-        return (int)(Math.Abs(price) % MaxPriceLevels);
+        ulong key = ((ulong)clientId << 32) ^ clientOrderId;
+        key = (key ^ (key >> 30)) * 0xbf58476d1ce4e5b9UL;
+        key = (key ^ (key >> 27)) * 0x94d049bb133111ebUL;
+        return (int)((key ^ (key >> 31)) & (ulong)ClientOrderMapMask);
     }
 
-    private int ClientOrderToIndex(uint clientId, ulong clientOrderId)
+    private Order? GetClientOrder(uint clientId, ulong clientOrderId)
     {
-        return (int)((clientId % MaxClients) * MaxOrdersPerClient + (clientOrderId % MaxOrdersPerClient));
+        if (clientId >= MaxClients) return null;
+        int slot = HashClientOrder(clientId, clientOrderId);
+        for (int i = 0; i < ClientOrderMapCapacity; i++)
+        {
+            var order = _clientOrderMap[slot];
+            if (order == null) return null;
+            if (order.ClientId == clientId && order.ClientOrderId == clientOrderId)
+            {
+                return order;
+            }
+            slot = (slot + 1) & ClientOrderMapMask;
+        }
+        return null;
+    }
+
+    private void PutClientOrder(Order order)
+    {
+        int slot = HashClientOrder(order.ClientId, order.ClientOrderId);
+        for (int i = 0; i < ClientOrderMapCapacity; i++)
+        {
+            var existing = _clientOrderMap[slot];
+            if (existing == null || (existing.ClientId == order.ClientId && existing.ClientOrderId == order.ClientOrderId))
+            {
+                _clientOrderMap[slot] = order;
+                return;
+            }
+            slot = (slot + 1) & ClientOrderMapMask;
+        }
+    }
+
+    private void RemoveClientOrder(uint clientId, ulong clientOrderId)
+    {
+        int slot = HashClientOrder(clientId, clientOrderId);
+        int targetSlot = -1;
+        for (int i = 0; i < ClientOrderMapCapacity; i++)
+        {
+            var order = _clientOrderMap[slot];
+            if (order == null) return;
+            if (order.ClientId == clientId && order.ClientOrderId == clientOrderId)
+            {
+                targetSlot = slot;
+                break;
+            }
+            slot = (slot + 1) & ClientOrderMapMask;
+        }
+
+        if (targetSlot < 0) return;
+
+        _clientOrderMap[targetSlot] = null;
+        int nextSlot = (targetSlot + 1) & ClientOrderMapMask;
+        while (_clientOrderMap[nextSlot] != null)
+        {
+            var currOrder = _clientOrderMap[nextSlot]!;
+            int originalSlot = HashClientOrder(currOrder.ClientId, currOrder.ClientOrderId);
+
+            bool shouldRelocate = false;
+            if (nextSlot >= targetSlot)
+            {
+                shouldRelocate = (originalSlot <= targetSlot || originalSlot > nextSlot);
+            }
+            else
+            {
+                shouldRelocate = (originalSlot <= targetSlot && originalSlot > nextSlot);
+            }
+
+            if (shouldRelocate)
+            {
+                _clientOrderMap[targetSlot] = currOrder;
+                _clientOrderMap[nextSlot] = null;
+                targetSlot = nextSlot;
+            }
+            nextSlot = (nextSlot + 1) & ClientOrderMapMask;
+        }
+    }
+
+    private static int HashPrice(Side side, long price)
+    {
+        ulong key = ((ulong)side << 60) ^ (ulong)price;
+        key = (key ^ (key >> 30)) * 0xbf58476d1ce4e5b9UL;
+        return (int)((key ^ (key >> 27)) & (ulong)PriceMapMask);
+    }
+
+    private OrdersAtPrice? GetOrdersAtPrice(Side side, long price)
+    {
+        int slot = HashPrice(side, price);
+        for (int i = 0; i < PriceMapCapacity; i++)
+        {
+            var entry = _priceOrdersAtPrice[slot];
+            if (entry == null) return null;
+            if (entry.Price == price && entry.Side == side) return entry;
+            slot = (slot + 1) & PriceMapMask;
+        }
+        return null;
+    }
+
+    private void PutOrdersAtPrice(OrdersAtPrice entry)
+    {
+        int slot = HashPrice(entry.Side, entry.Price);
+        for (int i = 0; i < PriceMapCapacity; i++)
+        {
+            var existing = _priceOrdersAtPrice[slot];
+            if (existing == null || (existing.Price == entry.Price && existing.Side == entry.Side))
+            {
+                _priceOrdersAtPrice[slot] = entry;
+                return;
+            }
+            slot = (slot + 1) & PriceMapMask;
+        }
+    }
+
+    private void RemoveOrdersAtPriceFromMap(Side side, long price)
+    {
+        int slot = HashPrice(side, price);
+        int targetSlot = -1;
+        for (int i = 0; i < PriceMapCapacity; i++)
+        {
+            var entry = _priceOrdersAtPrice[slot];
+            if (entry == null) return;
+            if (entry.Price == price && entry.Side == side)
+            {
+                targetSlot = slot;
+                break;
+            }
+            slot = (slot + 1) & PriceMapMask;
+        }
+
+        if (targetSlot < 0) return;
+
+        _priceOrdersAtPrice[targetSlot] = null;
+        int nextSlot = (targetSlot + 1) & PriceMapMask;
+        while (_priceOrdersAtPrice[nextSlot] != null)
+        {
+            var currEntry = _priceOrdersAtPrice[nextSlot]!;
+            int originalSlot = HashPrice(currEntry.Side, currEntry.Price);
+
+            bool shouldRelocate = false;
+            if (nextSlot >= targetSlot)
+            {
+                shouldRelocate = (originalSlot <= targetSlot || originalSlot > nextSlot);
+            }
+            else
+            {
+                shouldRelocate = (originalSlot <= targetSlot && originalSlot > nextSlot);
+            }
+
+            if (shouldRelocate)
+            {
+                _priceOrdersAtPrice[targetSlot] = currEntry;
+                _priceOrdersAtPrice[nextSlot] = null;
+                targetSlot = nextSlot;
+            }
+            nextSlot = (nextSlot + 1) & PriceMapMask;
+        }
     }
 
     public void Add(
@@ -63,6 +224,87 @@ public sealed class OrderBook
         long price,
         uint qty)
     {
+        // 1. Price Bounds Check
+        if (price <= 0 || price > MaxSupportedPrice)
+        {
+            _clientResponseListener?.OnClientResponse(new ClientResponse(
+                Type: ClientResponseType.Rejected,
+                ClientId: clientId,
+                TickerId: TickerId,
+                ClientOrderId: clientOrderId,
+                MarketOrderId: 0,
+                Side: side,
+                Price: price,
+                ExecQty: 0,
+                LeavesQty: 0));
+            return;
+        }
+
+        // 2. Client ID Bounds Check
+        if (clientId >= MaxClients)
+        {
+            _clientResponseListener?.OnClientResponse(new ClientResponse(
+                Type: ClientResponseType.Rejected,
+                ClientId: clientId,
+                TickerId: TickerId,
+                ClientOrderId: clientOrderId,
+                MarketOrderId: 0,
+                Side: side,
+                Price: price,
+                ExecQty: 0,
+                LeavesQty: 0));
+            return;
+        }
+
+        // 3. Per-Client Order Quota Check
+        if (_clientOrderCounts[clientId] >= MaxOrdersPerClient)
+        {
+            _clientResponseListener?.OnClientResponse(new ClientResponse(
+                Type: ClientResponseType.Rejected,
+                ClientId: clientId,
+                TickerId: TickerId,
+                ClientOrderId: clientOrderId,
+                MarketOrderId: 0,
+                Side: side,
+                Price: price,
+                ExecQty: 0,
+                LeavesQty: 0));
+            return;
+        }
+
+        // 4. Max Active Orders Limit Check
+        if (_activeOrdersCount >= MaxOrders)
+        {
+            _clientResponseListener?.OnClientResponse(new ClientResponse(
+                Type: ClientResponseType.Rejected,
+                ClientId: clientId,
+                TickerId: TickerId,
+                ClientOrderId: clientOrderId,
+                MarketOrderId: 0,
+                Side: side,
+                Price: price,
+                ExecQty: 0,
+                LeavesQty: 0));
+            return;
+        }
+
+        // 5. Max Active Price Levels Check
+        var existingOrdersAtPrice = GetOrdersAtPrice(side, price);
+        if (existingOrdersAtPrice == null && _activePriceLevelsCount >= MaxPriceLevels)
+        {
+            _clientResponseListener?.OnClientResponse(new ClientResponse(
+                Type: ClientResponseType.Rejected,
+                ClientId: clientId,
+                TickerId: TickerId,
+                ClientOrderId: clientOrderId,
+                MarketOrderId: 0,
+                Side: side,
+                Price: price,
+                ExecQty: 0,
+                LeavesQty: 0));
+            return;
+        }
+
         var marketOrderId = _nextMarketOrderId++;
 
         _clientResponseListener?.OnClientResponse(new ClientResponse(
@@ -86,8 +328,8 @@ public sealed class OrderBook
 
         if (leavesQty > 0)
         {
-            var priority = GetNextPriority(price);
-            
+            var priority = GetNextPriority(side, price);
+
             var order = _orderPool.Allocate();
             order.TickerId = TickerId;
             order.ClientId = clientId;
@@ -117,8 +359,7 @@ public sealed class OrderBook
         uint clientId,
         ulong clientOrderId)
     {
-        var index = ClientOrderToIndex(clientId: clientId, clientOrderId: clientOrderId);
-        var order = _clientOrderMap[index];
+        var order = GetClientOrder(clientId: clientId, clientOrderId: clientOrderId);
 
         if (order == null || order.ClientId != clientId || order.ClientOrderId != clientOrderId)
         {
@@ -162,13 +403,7 @@ public sealed class OrderBook
         uint clientId,
         ulong clientOrderId)
     {
-        var index = ClientOrderToIndex(clientId: clientId, clientOrderId: clientOrderId);
-        var order = _clientOrderMap[index];
-        if (order != null && order.ClientId == clientId && order.ClientOrderId == clientOrderId)
-        {
-            return order;
-        }
-        return null;
+        return GetClientOrder(clientId: clientId, clientOrderId: clientOrderId);
     }
 
     private uint CheckForMatch(
@@ -297,9 +532,9 @@ public sealed class OrderBook
         }
     }
 
-    private ulong GetNextPriority(long price)
+    private ulong GetNextPriority(Side side, long price)
     {
-        var ordersAtPrice = _priceOrdersAtPrice[PriceToIndex(price)];
+        var ordersAtPrice = GetOrdersAtPrice(side, price);
         if (ordersAtPrice != null && ordersAtPrice.FirstOrder != null)
         {
             return ordersAtPrice.FirstOrder.PrevOrder!.Priority + 1;
@@ -309,8 +544,7 @@ public sealed class OrderBook
 
     private void AddOrder(Order order)
     {
-        var priceIdx = PriceToIndex(order.Price);
-        var ordersAtPrice = _priceOrdersAtPrice[priceIdx];
+        var ordersAtPrice = GetOrdersAtPrice(order.Side, order.Price);
 
         if (ordersAtPrice == null)
         {
@@ -324,6 +558,7 @@ public sealed class OrderBook
             ordersAtPrice.PrevEntry = null;
             ordersAtPrice.NextEntry = null;
 
+            _activePriceLevelsCount++;
             AddOrdersAtPrice(ordersAtPrice);
         }
         else
@@ -337,13 +572,14 @@ public sealed class OrderBook
             firstOrder.PrevOrder = order;
         }
 
-        _clientOrderMap[ClientOrderToIndex(clientId: order.ClientId, clientOrderId: order.ClientOrderId)] = order;
+        _activeOrdersCount++;
+        _clientOrderCounts[order.ClientId]++;
+        PutClientOrder(order);
     }
 
     private void RemoveOrder(Order order)
     {
-        var priceIdx = PriceToIndex(order.Price);
-        var ordersAtPrice = _priceOrdersAtPrice[priceIdx]!;
+        var ordersAtPrice = GetOrdersAtPrice(order.Side, order.Price)!;
 
         if (order.PrevOrder == order)
         {
@@ -365,13 +601,15 @@ public sealed class OrderBook
             order.NextOrder = null;
         }
 
-        _clientOrderMap[ClientOrderToIndex(clientId: order.ClientId, clientOrderId: order.ClientOrderId)] = null;
+        RemoveClientOrder(order.ClientId, order.ClientOrderId);
+        _clientOrderCounts[order.ClientId]--;
+        _activeOrdersCount--;
         _orderPool.Deallocate(order);
     }
 
     private void AddOrdersAtPrice(OrdersAtPrice newOrdersAtPrice)
     {
-        _priceOrdersAtPrice[PriceToIndex(newOrdersAtPrice.Price)] = newOrdersAtPrice;
+        PutOrdersAtPrice(newOrdersAtPrice);
 
         ref var bestOrdersByPrice = ref (newOrdersAtPrice.Side == Side.Buy ? ref _bidsByPrice : ref _asksByPrice);
 
@@ -433,8 +671,7 @@ public sealed class OrderBook
     private void RemoveOrdersAtPrice(Side side, long price)
     {
         ref var bestOrdersByPrice = ref (side == Side.Buy ? ref _bidsByPrice : ref _asksByPrice);
-        var priceIdx = PriceToIndex(price);
-        var ordersAtPrice = _priceOrdersAtPrice[priceIdx]!;
+        var ordersAtPrice = GetOrdersAtPrice(side, price)!;
 
         if (ordersAtPrice.NextEntry == ordersAtPrice)
         {
@@ -454,7 +691,8 @@ public sealed class OrderBook
             ordersAtPrice.NextEntry = null;
         }
 
-        _priceOrdersAtPrice[priceIdx] = null;
+        RemoveOrdersAtPriceFromMap(side, price);
+        _activePriceLevelsCount--;
         _ordersAtPricePool.Deallocate(ordersAtPrice);
     }
 }
